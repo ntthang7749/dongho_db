@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>2.8 Cơ sở dữ liệu - Tóm tắt 15 bảng cốt lõi (1 Trang A4)</title>
+    <style>
+        body {
+            font-family: "Times New Roman", Times, serif;
+            line-height: 1.35;
+            color: #000;
+            margin: 40px;
+            background-color: #fff;
+            font-size: 13px; /* Đảm bảo vừa vặn 1 trang A4 */
+        }
+        h2 {
+            font-size: 15px;
+            font-weight: bold;
+            margin-top: 0px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        h3 {
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 6px;
+        }
+        p {
+            margin-top: 0;
+            margin-bottom: 8px;
+            text-align: justify;
+            text-indent: 30px; /* Thụt lề đầu dòng chuẩn văn bản */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            font-size: 11.5px; /* Giảm cỡ chữ bảng để vừa A4 */
+        }
+        th {
+            background-color: #f2f2f2;
+            color: #000;
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        td {
+            border: 1px solid #000;
+            padding: 5px;
+            vertical-align: top;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .fw-bold {
+            font-weight: bold;
+        }
+        .instruction-box {
+            background-color: #f9f9f9;
+            border: 1px dashed #000080;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="instruction-box">
+        <strong>HƯỚNG DẪN COPY VÀO MS WORD:</strong><br>
+        1. Nhấn <code>Ctrl + A</code> (chọn tất cả) rồi <code>Ctrl + C</code> (sao chép) trên trang này.<br>
+        2. Mở file báo cáo <em>DATN.docx</em>, di chuyển con trỏ tới mục <strong>2.8 Cơ sở dữ liệu</strong> và nhấn <code>Ctrl + V</code> (dán).<br>
+        3. Văn bản và bảng biểu sẽ tự động định hình hoàn hảo theo định dạng chuẩn của Microsoft Word (Font chữ Times New Roman, căn lề 2 bên, viền bảng mảnh lịch sự) và nằm gọn gàng trong đúng <strong>1 trang A4</strong>.
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #ccc; margin-bottom: 15px;">
+
+    <h2>2.8. Cơ sở dữ liệu hệ thống</h2>
+    <p>Để đảm bảo khả năng lưu trữ thông tin ổn định, tính toàn vẹn dữ liệu cao và tối ưu hóa hiệu năng truy vấn cho toàn bộ hệ thống thương mại điện tử bán đồng hồ DongHo, cơ sở dữ liệu được thiết kế theo mô hình quan hệ (Relational Database) và tuân thủ chặt chẽ chuẩn hóa dạng chuẩn 3 (3NF). Hệ thống quản lý toàn diện các thực thể kinh doanh từ người dùng, sản phẩm, đơn hàng cho tới các tính năng thông minh tích hợp trí tuệ nhân tạo (AI Gemini) như tự phân tích cảm xúc đánh giá, phát hiện spam bình luận và đề xuất nội dung.</p>
+    
+    <p>Dưới đây là bảng tổng hợp cấu trúc và chức năng của 15 bảng cơ sở dữ liệu cốt lõi nhất cấu thành nên hệ thống:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 5%;">STT</th>
+                <th style="width: 15%;">Tên bảng</th>
+                <th style="width: 25%;">Ý nghĩa / Chức năng</th>
+                <th style="width: 25%;">Các trường cốt lõi (PK, FK...)</th>
+                <th style="width: 30%;">Vai trò / Mối quan hệ liên kết</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-center">1</td>
+                <td class="fw-bold">users</td>
+                <td>Tài khoản người dùng</td>
+                <td>id, name, username, email, password, google_id, role, is_active</td>
+                <td>Lưu trữ thông tin người dùng, phân quyền truy cập (Admin/Customer), hỗ trợ Google OAuth.</td>
+            </tr>
+            <tr>
+                <td class="text-center">2</td>
+                <td class="fw-bold">otps</td>
+                <td>Mã xác thực một lần</td>
+                <td>id, email, otp, type, expires_at, is_used</td>
+                <td>Lưu mã OTP phục vụ quy trình xác thực kích hoạt tài khoản và khôi phục mật khẩu an toàn.</td>
+            </tr>
+            <tr>
+                <td class="text-center">3</td>
+                <td class="fw-bold">categories</td>
+                <td>Danh mục đồng hồ</td>
+                <td>id, name, slug, parent_id, image, is_active</td>
+                <td>Quản lý phân loại sản phẩm. Khóa ngoại parent_id liên kết chính nó thiết lập cấu trúc danh mục đa cấp.</td>
+            </tr>
+            <tr>
+                <td class="text-center">4</td>
+                <td class="fw-bold">brands</td>
+                <td>Thương hiệu đồng hồ</td>
+                <td>id, name, slug, logo, description, is_active</td>
+                <td>Lưu trữ thông tin xuất xứ và thương hiệu sản phẩm của các hãng đồng hồ nổi tiếng.</td>
+            </tr>
+            <tr>
+                <td class="text-center">5</td>
+                <td class="fw-bold">products</td>
+                <td>Thông tin sản phẩm</td>
+                <td>id, name, category_id, brand_id, price, sale_price, stock, ai_description</td>
+                <td>Lưu trữ thông số kỹ thuật chi tiết của đồng hồ. Khóa ngoại liên kết tới categories và brands. Có mô tả tạo từ AI.</td>
+            </tr>
+            <tr>
+                <td class="text-center">6</td>
+                <td class="fw-bold">product_images</td>
+                <td>Album ảnh chi tiết</td>
+                <td>id, product_id, image, sort_order</td>
+                <td>Lưu trữ bộ sưu tập hình ảnh chi tiết của đồng hồ để hiển thị slide hình ảnh tại trang chi tiết. FK liên kết products.</td>
+            </tr>
+            <tr>
+                <td class="text-center">7</td>
+                <td class="fw-bold">orders</td>
+                <td>Đơn hàng mua sắm</td>
+                <td>id, order_code, user_id, coupon_id, total, payment_method, status</td>
+                <td>Quản lý giao dịch mua hàng, thông tin giao nhận, trạng thái đơn và tích hợp thanh toán VNPay/VietQR.</td>
+            </tr>
+            <tr>
+                <td class="text-center">8</td>
+                <td class="fw-bold">order_items</td>
+                <td>Chi tiết sản phẩm đơn hàng</td>
+                <td>id, order_id, product_id, product_name, price, quantity, subtotal</td>
+                <td>Lưu trữ danh sách sản phẩm cụ thể và số lượng tương ứng của mỗi đơn hàng. FK liên kết orders và products.</td>
+            </tr>
+            <tr>
+                <td class="text-center">9</td>
+                <td class="fw-bold">coupons</td>
+                <td>Mã giảm giá khuyến mãi</td>
+                <td>id, code, type, value, min_order, max_usage, usage_count, expires_at</td>
+                <td>Quản lý các chương trình ưu đãi, chiết khấu hóa đơn cho khách hàng theo tiền mặt hoặc tỷ lệ %.</td>
+            </tr>
+            <tr>
+                <td class="text-center">10</td>
+                <td class="fw-bold">reviews</td>
+                <td>Đánh giá & AI Phân tích</td>
+                <td>id, user_id, product_id, rating, comment, sentiment, sentiment_score</td>
+                <td>Lưu trữ nhận xét và số sao đánh giá. Tích hợp AI phân tích cảm xúc (Tích cực, Tiêu cực) và tóm tắt bình luận.</td>
+            </tr>
+            <tr>
+                <td class="text-center">11</td>
+                <td class="fw-bold">news</td>
+                <td>Bài viết tin tức</td>
+                <td>id, title, slug, summary, content, user_id, ai_suggested_title</td>
+                <td>Lưu trữ tin tức thời trang đồng hồ. FK liên kết users (tác giả). Tích hợp AI gợi ý tiêu đề thu hút người đọc.</td>
+            </tr>
+            <tr>
+                <td class="text-center">12</td>
+                <td class="fw-bold">comments</td>
+                <td>Bình luận bài viết</td>
+                <td>id, news_id, user_id, content, status, is_spam</td>
+                <td>Quản lý bình luận dưới bài viết tin tức. Tích hợp mô-đun AI quét tự động và gán cờ phát hiện bình luận spam.</td>
+            </tr>
+            <tr>
+                <td class="text-center">13</td>
+                <td class="fw-bold">wishlists</td>
+                <td>Sản phẩm yêu thích</td>
+                <td>id, user_id, product_id</td>
+                <td>Lưu trữ danh sách sản phẩm yêu thích của khách hàng để theo dõi, FK liên kết users và products.</td>
+            </tr>
+            <tr>
+                <td class="text-center">14</td>
+                <td class="fw-bold">contacts</td>
+                <td>Liên hệ và phản hồi</td>
+                <td>id, user_id, name, email, subject, message, status, admin_reply</td>
+                <td>Tiếp nhận góp ý, thắc mắc từ khách hàng và lưu vết phản hồi giải quyết vấn đề từ phía ban quản trị hệ thống.</td>
+            </tr>
+            <tr>
+                <td class="text-center">15</td>
+                <td class="fw-bold">banners</td>
+                <td>Slide quảng cáo</td>
+                <td>id, title, image, link, is_active, sort_order</td>
+                <td>Lưu trữ hình ảnh và thông tin sự kiện quảng bá nổi bật tại trang chủ, định hướng hành vi mua sắm của người dùng.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Các bảng cơ sở dữ liệu trên được liên kết chặt chẽ thông qua hệ thống khóa ngoại cùng cơ chế ràng buộc toàn vẹn dữ liệu (Cascade, Set Null) tương ứng. Thiết kế này giúp hệ thống hoạt động đồng bộ, duy trì hiệu năng ổn định dưới tải lượng cao, hạn chế tối đa hiện tượng dư thừa dữ liệu, đồng thời sẵn sàng hỗ trợ các chức năng thông minh tối ưu hóa trải nghiệm người dùng thông qua mô-đun AI tích hợp.</p>
+
+</body>
+</html>

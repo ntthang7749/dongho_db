@@ -45,40 +45,32 @@ class CommentController extends Controller
         }
 
         try {
-            $result = $gemini->detectSpam($comment->content);
-            $isSpam = (bool)($result['is_spam'] ?? false);
-            $confidence = (float)($result['confidence'] ?? 0.0);
-            $reason = $result['reason'] ?? 'Bình luận hợp lệ và an toàn';
-
-            // Cập nhật Database
-            // Nếu phát hiện vi phạm với độ tin cậy cao >= 0.85, tự từ chối
-            // Nếu an toàn với độ tin cậy >= 0.7, tự duyệt
-            $status = $comment->status;
-            if ($isSpam && $confidence >= 0.85) {
-                $status = 'rejected';
-            } elseif (!$isSpam && $confidence >= 0.7) {
-                $status = 'approved';
-            }
+            $result = $gemini->processComment($comment);
+            $status = $result['status'];
 
             $comment->update([
-                'is_spam' => $isSpam,
-                'ai_reason' => $reason,
+                'is_spam' => $result['is_spam'],
+                'ai_reason' => $result['reason'],
                 'status' => $status,
+                'sentiment' => $result['sentiment'],
+                'sentiment_score' => $result['sentiment_score'],
             ]);
 
             // Ghi nhật ký
-            $statusLog = $isSpam ? "Phát hiện VI PHẠM (Lý do: {$reason})" : "Hợp lệ và an toàn";
+            $statusLog = $result['is_spam'] ? "Phát hiện VI PHẠM (Lý do: {$result['reason']})" : "Hợp lệ và an toàn";
             ActivityLogger::log('AI quét bình luận', 'Bình luận', $comment->id, 
-                "AI đã quét bình luận #{$comment->id} của '{$comment->user->name}'. Kết quả: {$statusLog} (Độ tin cậy: " . ($confidence * 100) . "%)"
+                "AI đã quét bình luận #{$comment->id} của '{$comment->user->name}'. Kết quả: {$statusLog} (Độ tin cậy: " . ($result['confidence'] * 100) . "%)"
             );
 
             return response()->json([
                 'success' => true,
-                'is_spam' => $isSpam,
-                'confidence' => $confidence,
-                'reason' => $reason,
+                'is_spam' => $result['is_spam'],
+                'confidence' => $result['confidence'],
+                'reason' => $result['reason'],
                 'status' => $status,
-                'status_text' => ['pending' => 'Chờ duyệt', 'approved' => 'Đã duyệt', 'rejected' => 'Từ chối'][$status]
+                'status_text' => ['pending' => 'Chờ duyệt', 'approved' => 'Đã duyệt', 'rejected' => 'Từ chối'][$status],
+                'sentiment' => $result['sentiment'],
+                'sentiment_score' => $result['sentiment_score'],
             ]);
 
         } catch (\Exception $e) {
@@ -88,7 +80,22 @@ class CommentController extends Controller
 
     public function bulkAiCheck(Request $request, GeminiService $gemini)
     {
-        $comments = Comment::where('status', 'pending')->get();
+        $ids = $request->input('ids', []);
+
+        if (empty($ids)) {
+            return response()->json([
+                'success' => true,
+                'scanned_count' => 0,
+                'results' => []
+            ]);
+        }
+
+        $comments = Comment::whereIn('id', $ids)
+            ->where(function ($query) {
+                $query->where('status', '!=', 'approved')
+                      ->orWhereNull('sentiment')
+                      ->orWhere('sentiment', '');
+            })->get();
         $updatedCount = 0;
         $results = [];
 
@@ -96,30 +103,25 @@ class CommentController extends Controller
             if (!$comment->content) continue;
             
             try {
-                $result = $gemini->detectSpam($comment->content);
-                $isSpam = (bool)($result['is_spam'] ?? false);
-                $confidence = (float)($result['confidence'] ?? 0.0);
-                $reason = $result['reason'] ?? 'Bình luận hợp lệ và an toàn';
-
-                $status = 'pending';
-                if ($isSpam && $confidence >= 0.85) {
-                    $status = 'rejected';
-                } elseif (!$isSpam && $confidence >= 0.7) {
-                    $status = 'approved';
-                }
+                $result = $gemini->processComment($comment);
+                $status = $result['status'];
 
                 $comment->update([
-                    'is_spam' => $isSpam,
-                    'ai_reason' => $reason,
+                    'is_spam' => $result['is_spam'],
+                    'ai_reason' => $result['reason'],
                     'status' => $status,
+                    'sentiment' => $result['sentiment'],
+                    'sentiment_score' => $result['sentiment_score'],
                 ]);
 
                 $results[] = [
                     'id' => $comment->id,
-                    'is_spam' => $isSpam,
-                    'reason' => $reason,
+                    'is_spam' => $result['is_spam'],
+                    'reason' => $result['reason'],
                     'status' => $status,
-                    'status_text' => ['pending' => 'Chờ duyệt', 'approved' => 'Đã duyệt', 'rejected' => 'Từ chối'][$status]
+                    'status_text' => ['pending' => 'Chờ duyệt', 'approved' => 'Đã duyệt', 'rejected' => 'Từ chối'][$status],
+                    'sentiment' => $result['sentiment'],
+                    'sentiment_score' => $result['sentiment_score'],
                 ];
                 $updatedCount++;
 
@@ -128,7 +130,7 @@ class CommentController extends Controller
             }
         }
 
-        ActivityLogger::log('AI quét hàng loạt', 'Bình luận', 0, "Đã chạy AI quét hàng loạt kiểm duyệt tất cả bình luận chờ duyệt. Tổng số bình luận đã quét: {$updatedCount}");
+        ActivityLogger::log('AI quét hàng loạt', 'Bình luận', 0, "Đã chạy AI quét hàng loạt kiểm duyệt tất cả bình luận trên trang. Tổng số bình luận đã quét: {$updatedCount}");
 
         return response()->json([
             'success' => true,

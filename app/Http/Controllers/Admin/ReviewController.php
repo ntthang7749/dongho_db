@@ -76,26 +76,17 @@ class ReviewController extends Controller
         }
 
         try {
-            $result = $gemini->detectReviewSpam($review->comment);
-            $isSpam = (bool)($result['is_spam'] ?? false);
-            $confidence = (float)($result['confidence'] ?? 0.0);
-            $reason = $result['reason'] ?? 'Đánh giá hợp lệ và an toàn';
+            $result = $gemini->processReview($review);
 
-            // Cập nhật Database
-            // Nếu phát hiện vi phạm với độ tin cậy cao >= 0.85, tự từ chối
-            // Nếu an toàn với độ tin cậy >= 0.7, tự duyệt
             $oldStatus = $review->status;
-            $status = $review->status;
-            if ($isSpam && $confidence >= 0.85) {
-                $status = 'rejected';
-            } elseif (!$isSpam && $confidence >= 0.7) {
-                $status = 'approved';
-            }
+            $status = $result['status'];
 
             $review->update([
-                'is_spam' => $isSpam,
-                'ai_reason' => $reason,
+                'is_spam' => $result['is_spam'],
+                'ai_reason' => $result['reason'],
                 'status' => $status,
+                'sentiment' => $result['sentiment'],
+                'sentiment_score' => $result['sentiment_score'],
             ]);
 
             // Cập nhật lại Rating sản phẩm nếu trạng thái thay đổi
@@ -109,18 +100,20 @@ class ReviewController extends Controller
             }
 
             // Ghi nhật ký
-            $statusLog = $isSpam ? "Phát hiện VI PHẠM (Lý do: {$reason})" : "Hợp lệ và an toàn";
+            $statusLog = $result['is_spam'] ? "Phát hiện VI PHẠM (Lý do: {$result['reason']})" : "Hợp lệ và an toàn";
             ActivityLogger::log('AI quét đánh giá', 'Đánh giá', $review->id, 
-                "AI đã quét đánh giá #{$review->id} của '{$review->user->name}' cho sản phẩm '{$review->product->name}'. Kết quả: {$statusLog} (Độ tin cậy: " . ($confidence * 100) . "%)"
+                "AI đã quét đánh giá #{$review->id} của '{$review->user->name}' cho sản phẩm '{$review->product->name}'. Kết quả: {$statusLog} (Độ tin cậy: " . ($result['confidence'] * 100) . "%)"
             );
 
             return response()->json([
                 'success' => true,
-                'is_spam' => $isSpam,
-                'confidence' => $confidence,
-                'reason' => $reason,
+                'is_spam' => $result['is_spam'],
+                'confidence' => $result['confidence'],
+                'reason' => $result['reason'],
                 'status' => $status,
-                'status_text' => ['pending' => 'Chờ duyệt', 'approved' => 'Đã duyệt', 'rejected' => 'Từ chối'][$status]
+                'status_text' => ['pending' => 'Chờ duyệt', 'approved' => 'Đã duyệt', 'rejected' => 'Từ chối'][$status],
+                'sentiment' => $result['sentiment'],
+                'sentiment_score' => $result['sentiment_score'],
             ]);
 
         } catch (\Exception $e) {
@@ -130,7 +123,22 @@ class ReviewController extends Controller
 
     public function bulkAiCheck(Request $request, GeminiService $gemini)
     {
-        $reviews = Review::where('status', 'pending')->get();
+        $ids = $request->input('ids', []);
+
+        if (empty($ids)) {
+            return response()->json([
+                'success' => true,
+                'scanned_count' => 0,
+                'results' => []
+            ]);
+        }
+
+        $reviews = Review::whereIn('id', $ids)
+            ->where(function ($query) {
+                $query->where('status', '!=', 'approved')
+                      ->orWhereNull('sentiment')
+                      ->orWhere('sentiment', '');
+            })->get();
         $updatedCount = 0;
         $results = [];
         $affectedProducts = [];
@@ -139,23 +147,17 @@ class ReviewController extends Controller
             if (!$review->comment) continue;
             
             try {
-                $result = $gemini->detectReviewSpam($review->comment);
-                $isSpam = (bool)($result['is_spam'] ?? false);
-                $confidence = (float)($result['confidence'] ?? 0.0);
-                $reason = $result['reason'] ?? 'Đánh giá hợp lệ và an toàn';
+                $result = $gemini->processReview($review);
 
                 $oldStatus = $review->status;
-                $status = 'pending';
-                if ($isSpam && $confidence >= 0.85) {
-                    $status = 'rejected';
-                } elseif (!$isSpam && $confidence >= 0.7) {
-                    $status = 'approved';
-                }
+                $status = $result['status'];
 
                 $review->update([
-                    'is_spam' => $isSpam,
-                    'ai_reason' => $reason,
+                    'is_spam' => $result['is_spam'],
+                    'ai_reason' => $result['reason'],
                     'status' => $status,
+                    'sentiment' => $result['sentiment'],
+                    'sentiment_score' => $result['sentiment_score'],
                 ]);
 
                 if ($oldStatus !== $status) {
@@ -164,10 +166,12 @@ class ReviewController extends Controller
 
                 $results[] = [
                     'id' => $review->id,
-                    'is_spam' => $isSpam,
-                    'reason' => $reason,
+                    'is_spam' => $result['is_spam'],
+                    'reason' => $result['reason'],
                     'status' => $status,
-                    'status_text' => ['pending' => 'Chờ duyệt', 'approved' => 'Đã duyệt', 'rejected' => 'Từ chối'][$status]
+                    'status_text' => ['pending' => 'Chờ duyệt', 'approved' => 'Đã duyệt', 'rejected' => 'Từ chối'][$status],
+                    'sentiment' => $result['sentiment'],
+                    'sentiment_score' => $result['sentiment_score'],
                 ];
                 $updatedCount++;
 

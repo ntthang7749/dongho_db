@@ -582,6 +582,18 @@
                 <span class="review-count-badge d-inline-flex align-items-center justify-content-center px-2 ms-1">{{ $product->rating_count }}</span>
             </div>
             <div class="reviews-body p-4">
+                {{-- AI Review Summary --}}
+                @if($product->ai_description)
+                <div class="p-3 mb-4 rounded-3" style="background: linear-gradient(135deg, rgba(201,168,76,0.06), rgba(201,168,76,0.01)); border: 1px solid rgba(201,168,76,0.18);">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="bi bi-stars text-warning fs-5"></i>
+                        <strong style="font-family:'Playfair Display',serif; font-size: 0.95rem; color: #1a1a2e;">Tóm tắt đánh giá bởi AI</strong>
+                    </div>
+                    <p class="mb-0 text-muted" style="font-size: 0.855rem; line-height: 1.65; font-style: italic;">
+                        {{ $product->ai_description }}
+                    </p>
+                </div>
+                @endif
 
                 {{-- Write review --}}
                 @if($canReview)
@@ -647,6 +659,12 @@
                                 @endfor
                             </div>
                             <span class="review-time">{{ $review->created_at->diffForHumans() }}</span>
+
+                            @if($review->sentiment === 'positive')
+                                <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.7rem; padding: 2px 6px;">😊 Tích cực</span>
+                            @elseif($review->sentiment === 'negative')
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.7rem; padding: 2px 6px;">😠 Tiêu cực</span>
+                            @endif
                         </div>
                         @if($review->comment)
                         <p class="review-comment">{{ $review->comment }}</p>

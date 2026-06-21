@@ -28,27 +28,15 @@ class ModerateComment implements ShouldQueue
         }
 
         try {
-            $result = $gemini->detectSpam($this->comment->content);
-
-            $isSpam = (bool) ($result['is_spam'] ?? false);
-            $confidence = (float) ($result['confidence'] ?? 0.0);
-
-            // Quyết định trạng thái dựa vào confidence
-            // - is_spam=true + confidence>=0.85: tự reject
-            // - is_spam=false + confidence>=0.7: tự approve
-            // - còn lại: giữ pending để admin duyệt
-            if ($isSpam && $confidence >= 0.85) {
-                $status = 'rejected';
-            } elseif (! $isSpam && $confidence >= 0.7) {
-                $status = 'approved';
-            } else {
-                $status = 'pending';
-            }
+            // Phân tích và kiểm duyệt bình luận bằng quy trình tối ưu
+            $result = $gemini->processComment($this->comment);
 
             $this->comment->update([
-                'is_spam' => $isSpam,
-                'ai_reason' => $result['reason'] ?? null,
-                'status' => $status,
+                'is_spam' => $result['is_spam'],
+                'ai_reason' => $result['reason'],
+                'status' => $result['status'],
+                'sentiment' => $result['sentiment'],
+                'sentiment_score' => $result['sentiment_score'],
             ]);
 
         } catch (\Exception $e) {

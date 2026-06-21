@@ -244,7 +244,14 @@
                             </div>
                             <div class="flex-grow-1">
                                 <div class="comment-bubble p-3 border border-light rounded-3">
-                                    <div class="fw-bold small text-dark mb-1">{{ $comment->user->name ?? 'Ẩn danh' }}</div>
+                                    <div class="fw-bold small text-dark mb-1 d-flex align-items-center gap-2">
+                                        {{ $comment->user->name ?? 'Ẩn danh' }}
+                                        @if($comment->sentiment === 'positive')
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.65rem; padding: 2px 6px;">😊 Tích cực</span>
+                                        @elseif($comment->sentiment === 'negative')
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.65rem; padding: 2px 6px;">😠 Tiêu cực</span>
+                                        @endif
+                                    </div>
                                     <div class="small text-muted mb-2" style="font-size: 0.75rem;">
                                         <i class="bi bi-clock me-1 text-gold"></i>
                                         {{ $comment->created_at->diffForHumans() }}

@@ -28,33 +28,17 @@ class AnalyzeReviewSentiment implements ShouldQueue
         }
 
         try {
-            // 1. Phân tích cảm xúc đánh giá
-            $sentimentResult = $gemini->analyzeSentiment($this->review->comment);
-
-            // 2. Kiểm duyệt nội dung tự động chống XSS, Spam, Kích động, Kỳ thị
-            $moderationResult = $gemini->detectReviewSpam($this->review->comment);
-            $isSpam = (bool)($moderationResult['is_spam'] ?? false);
-            $confidence = (float)($moderationResult['confidence'] ?? 0.0);
-
-            // Quyết định trạng thái phê duyệt tự động của AI
-            // - Phát hiện vi phạm với độ tin cậy >= 0.85: Tự động từ chối (rejected)
-            // - Đánh giá sạch với độ tin cậy >= 0.7: Tự động duyệt (approved)
-            // - Các trường hợp còn lại: Chờ duyệt (pending)
-            if ($isSpam && $confidence >= 0.85) {
-                $status = 'rejected';
-            } elseif (!$isSpam && $confidence >= 0.7) {
-                $status = 'approved';
-            } else {
-                $status = 'pending';
-            }
+            // Phân tích và kiểm duyệt đánh giá bằng quy trình tối ưu
+            $result = $gemini->processReview($this->review);
 
             $oldStatus = $this->review->status;
+            $status = $result['status'];
 
             $this->review->update([
-                'sentiment' => $sentimentResult['sentiment'] ?? 'neutral',
-                'sentiment_score' => $sentimentResult['score'] ?? 0.5,
-                'is_spam' => $isSpam,
-                'ai_reason' => $moderationResult['reason'] ?? null,
+                'sentiment' => $result['sentiment'],
+                'sentiment_score' => $result['sentiment_score'],
+                'is_spam' => $result['is_spam'],
+                'ai_reason' => $result['reason'],
                 'status' => $status,
             ]);
 

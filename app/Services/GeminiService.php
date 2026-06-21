@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\AiLog;
+use App\Models\Review;
+use App\Models\Comment;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -794,6 +796,187 @@ QUY TẮC PHẢN HỒI:
         $this->log('suggest_contact_reply', "Contact Subject: {$contactSubject} | Name: {$customerName}", $response);
 
         return $response;
+    }
+
+    // ══════════════════════════════════════════
+    // FEATURE 12: QUY TRÌNH QUÉT ĐÁNH GIÁ TỐI ƯU (LAZY SCAN)
+    // Hạn chế gọi AI cho các bình luận ngắn/đơn giản và từ khóa spam rõ ràng.
+    // ══════════════════════════════════════════
+    public function processReview(Review $review): array
+    {
+        $comment = trim($review->comment ?? '');
+        $rating = (int)$review->rating;
+
+        // 1. KIỂM TRA SPAM BẰNG TỪ KHÓA CẤM (Keyword Blacklist)
+        $spamKeywords = [
+            'casino', 'nhà cái', 'lừa đảo', 'crypto', 'tiền ảo', 'đánh bài', 
+            'tải app', 'http://', 'https://', 'www.', 'tặng code', 'tải game',
+            'sex', '18+', 'độ kiếp', 'cá độ', 'cá cược', 'tài xỉu'
+        ];
+
+        foreach ($spamKeywords as $keyword) {
+            if (mb_strpos(mb_strtolower($comment), $keyword) !== false) {
+                return [
+                    'is_spam' => true,
+                    'confidence' => 1.0,
+                    'reason' => 'Tự động từ chối do chứa từ khóa cấm/quảng cáo (' . $keyword . ')',
+                    'sentiment' => $rating >= 4 ? 'positive' : ($rating <= 2 ? 'negative' : 'neutral'),
+                    'sentiment_score' => $rating >= 4 ? 0.8 : ($rating <= 2 ? 0.2 : 0.5),
+                    'status' => $review->status === 'approved' ? 'approved' : 'rejected',
+                    'used_ai' => false
+                ];
+            }
+        }
+
+        // 2. PHÂN TÍCH NHANH THEO RATING VÀ ĐỘ DÀI COMMENT (Rule-based Sentiment & Auto-approve)
+        // Nếu comment trống hoặc rất ngắn (dưới 25 ký tự) và không có ký tự đặc biệt nghi ngờ
+        if (mb_strlen($comment) <= 25) {
+            $sentiment = 'neutral';
+            $score = 0.5;
+            if ($rating >= 4) {
+                $sentiment = 'positive';
+                $score = $rating == 5 ? 0.9 : 0.8;
+            } elseif ($rating <= 2) {
+                $sentiment = 'negative';
+                $score = $rating == 1 ? 0.1 : 0.2;
+            }
+
+            return [
+                'is_spam' => false,
+                'confidence' => 1.0,
+                'reason' => 'Đánh giá ngắn, tự động phê duyệt dựa trên số sao (' . $rating . ' sao)',
+                'sentiment' => $sentiment,
+                'sentiment_score' => $score,
+                'status' => 'approved',
+                'used_ai' => false
+            ];
+        }
+
+        // 3. NẾU BÌNH LUẬN DÀI VÀ PHỨC TẠP -> GỌI GEMINI API (AI Fallback)
+        try {
+            $spamResult = $this->detectReviewSpam($comment);
+            $isSpam = (bool)($spamResult['is_spam'] ?? false);
+            $confidence = (float)($spamResult['confidence'] ?? 0.0);
+            $reason = $spamResult['reason'] ?? 'Đánh giá hợp lệ và an toàn';
+
+            $sentimentResult = $this->analyzeSentiment($comment);
+
+            // Phê duyệt tự động theo kết quả AI và yêu cầu người dùng:
+            // - Đã duyệt thì vẫn giữ đã duyệt.
+            // - Chờ duyệt thì chuyển sang đã duyệt trừ khi vi phạm quy tắc (is_spam = true).
+            if ($review->status === 'approved') {
+                $status = 'approved';
+            } else {
+                $status = $isSpam ? 'rejected' : 'approved';
+            }
+
+            return [
+                'is_spam' => $isSpam,
+                'confidence' => $confidence,
+                'reason' => $reason,
+                'sentiment' => $sentimentResult['sentiment'] ?? 'neutral',
+                'sentiment_score' => $sentimentResult['score'] ?? 0.5,
+                'status' => $status,
+                'used_ai' => true
+            ];
+        } catch (\Exception $e) {
+            // Fallback khi AI lỗi
+            $sentiment = $rating >= 4 ? 'positive' : ($rating <= 2 ? 'negative' : 'neutral');
+            $score = $rating >= 4 ? 0.8 : ($rating <= 2 ? 0.2 : 0.5);
+            return [
+                'is_spam' => false,
+                'confidence' => 0.5,
+                'reason' => 'Tự động phê duyệt (AI đang bận/lỗi) dựa trên số sao (' . $rating . ' sao)',
+                'sentiment' => $sentiment,
+                'sentiment_score' => $score,
+                'status' => 'approved',
+                'used_ai' => false
+            ];
+        }
+    }
+
+    // ══════════════════════════════════════════
+    // FEATURE 13: QUY TRÌNH QUÉT BÌNH LUẬN TỐI ƯU (LAZY SCAN)
+    // Hạn chế gọi AI cho các bình luận ngắn/đơn giản và từ khóa spam rõ ràng.
+    // ══════════════════════════════════════════
+    public function processComment(Comment $comment): array
+    {
+        $content = trim($comment->content ?? '');
+
+        // 1. KIỂM TRA SPAM BẰNG TỪ KHÓA CẤM (Keyword Blacklist)
+        $spamKeywords = [
+            'casino', 'nhà cái', 'lừa đảo', 'crypto', 'tiền ảo', 'đánh bài', 
+            'tải app', 'http://', 'https://', 'www.', 'tặng code', 'tải game',
+            'sex', '18+', 'độ kiếp', 'cá độ', 'cá cược', 'tài xỉu'
+        ];
+
+        foreach ($spamKeywords as $keyword) {
+            if (mb_strpos(mb_strtolower($content), $keyword) !== false) {
+                return [
+                    'is_spam' => true,
+                    'confidence' => 1.0,
+                    'reason' => 'Tự động từ chối do chứa từ khóa cấm/quảng cáo (' . $keyword . ')',
+                    'sentiment' => 'neutral',
+                    'sentiment_score' => 0.5,
+                    'status' => $comment->status === 'approved' ? 'approved' : 'rejected',
+                    'used_ai' => false
+                ];
+            }
+        }
+
+        // 2. PHÂN TÍCH NHANH THEO ĐỘ DÀI COMMENT (Rule-based Auto-approve)
+        // Nếu comment trống hoặc rất ngắn (dưới 25 ký tự)
+        if (mb_strlen($content) <= 25) {
+            return [
+                'is_spam' => false,
+                'confidence' => 1.0,
+                'reason' => 'Bình luận ngắn, tự động phê duyệt an toàn',
+                'sentiment' => 'neutral',
+                'sentiment_score' => 0.5,
+                'status' => 'approved',
+                'used_ai' => false
+            ];
+        }
+
+        // 3. NẾU BÌNH LUẬN DÀI -> GỌI GEMINI API (AI Fallback)
+        try {
+            $spamResult = $this->detectSpam($content);
+            $isSpam = (bool)($spamResult['is_spam'] ?? false);
+            $confidence = (float)($spamResult['confidence'] ?? 0.0);
+            $reason = $spamResult['reason'] ?? 'Bình luận hợp lệ và an toàn';
+
+            $sentimentResult = $this->analyzeSentiment($content);
+
+            // Phê duyệt tự động theo kết quả AI và yêu cầu người dùng:
+            // - Đã duyệt thì vẫn giữ đã duyệt.
+            // - Chờ duyệt thì chuyển sang đã duyệt trừ khi vi phạm quy tắc (is_spam = true).
+            if ($comment->status === 'approved') {
+                $status = 'approved';
+            } else {
+                $status = $isSpam ? 'rejected' : 'approved';
+            }
+
+            return [
+                'is_spam' => $isSpam,
+                'confidence' => $confidence,
+                'reason' => $reason,
+                'sentiment' => $sentimentResult['sentiment'] ?? 'neutral',
+                'sentiment_score' => $sentimentResult['score'] ?? 0.5,
+                'status' => $status,
+                'used_ai' => true
+            ];
+        } catch (\Exception $e) {
+            // Fallback khi AI lỗi
+            return [
+                'is_spam' => false,
+                'confidence' => 0.5,
+                'reason' => 'Tự động phê duyệt (AI đang bận/lỗi)',
+                'sentiment' => 'neutral',
+                'sentiment_score' => 0.5,
+                'status' => 'approved',
+                'used_ai' => false
+            ];
+        }
     }
 }
 

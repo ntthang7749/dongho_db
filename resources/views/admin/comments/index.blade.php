@@ -54,19 +54,39 @@
                         <small>{{ Str::limit($comment->content, 100) }}</small>
                     </td>
                     <td class="text-center" id="ai-moderation-cell-{{ $comment->id }}">
-                        @if($comment->ai_reason)
-                            @if($comment->is_spam)
-                                <span class="badge bg-danger cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $comment->ai_reason }}">
-                                    ⚠ Vi Phạm
-                                </span>
+                        <div class="d-flex flex-column align-items-center gap-1">
+                            @if($comment->ai_reason)
+                                @if($comment->is_spam)
+                                    <span class="badge bg-danger cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $comment->ai_reason }}">
+                                        ⚠ Vi Phạm
+                                    </span>
+                                @else
+                                    <span class="badge bg-success cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $comment->ai_reason }}">
+                                        ✓ Hợp Lệ
+                                    </span>
+                                @endif
                             @else
-                                <span class="badge bg-success cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $comment->ai_reason }}">
-                                    ✓ Hợp Lệ
+                                <span class="badge bg-secondary">Chưa quét AI</span>
+                            @endif
+
+                            @if($comment->sentiment)
+                                @php
+                                    $sentimentColors = [
+                                        'positive' => 'bg-success-subtle text-success border border-success-subtle',
+                                        'neutral'  => 'bg-secondary-subtle text-secondary border border-secondary-subtle',
+                                        'negative' => 'bg-danger-subtle text-danger border border-danger-subtle'
+                                    ];
+                                    $sentimentLabels = [
+                                        'positive' => '😊 Tích cực',
+                                        'neutral'  => '😐 Trung lập',
+                                        'negative' => '😠 Tiêu cực'
+                                    ];
+                                @endphp
+                                <span class="badge {{ $sentimentColors[$comment->sentiment] ?? 'bg-secondary' }}" style="font-size: 0.72rem; padding: 2px 6px;">
+                                    {{ $sentimentLabels[$comment->sentiment] ?? $comment->sentiment }} ({{ number_format($comment->sentiment_score, 1) }})
                                 </span>
                             @endif
-                        @else
-                            <span class="badge bg-secondary">Chưa quét AI</span>
-                        @endif
+                        </div>
                     </td>
                     <td class="text-center" id="status-badge-cell-{{ $comment->id }}">
                         <span class="badge
@@ -158,10 +178,37 @@ async function runSingleAiCheck(id) {
         if (data.success) {
             let badgeClass = data.is_spam ? 'bg-danger' : 'bg-success';
             let badgeText = data.is_spam ? '⚠ Vi Phạm' : '✓ Hợp Lệ';
+
+            let sentimentColors = {
+                'positive': 'bg-success-subtle text-success border border-success-subtle',
+                'neutral': 'bg-secondary-subtle text-secondary border border-secondary-subtle',
+                'negative': 'bg-danger-subtle text-danger border border-danger-subtle'
+            };
+            let sentimentLabels = {
+                'positive': '😊 Tích cực',
+                'neutral': '😐 Trung lập',
+                'negative': '😠 Tiêu cực'
+            };
+            
+            let sentimentHtml = '';
+            if (data.sentiment) {
+                let sColor = sentimentColors[data.sentiment] || 'bg-secondary';
+                let sLabel = sentimentLabels[data.sentiment] || data.sentiment;
+                let sScore = parseFloat(data.sentiment_score).toFixed(1);
+                sentimentHtml = `
+                    <span class="badge ${sColor}" style="font-size: 0.72rem; padding: 2px 6px; margin-top: 4px;">
+                        ${sLabel} (${sScore})
+                    </span>
+                `;
+            }
+
             aiCell.innerHTML = `
-                <span class="badge ${badgeClass} cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" title="${data.reason}">
-                    ${badgeText}
-                </span>
+                <div class="d-flex flex-column align-items-center gap-1">
+                    <span class="badge ${badgeClass} cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" title="${data.reason}">
+                        ${badgeText}
+                    </span>
+                    ${sentimentHtml}
+                </div>
             `;
 
             if (data.is_spam) {
@@ -196,7 +243,16 @@ async function runBulkAiCheck() {
     const icon = document.getElementById('bulkAiIcon');
     const spinner = document.getElementById('bulkAiSpinner');
 
-    if (!confirm('Hệ thống sẽ tự động quét AI tất cả bình luận có trạng thái "Chờ duyệt" để kiểm duyệt spam, bậy bạ, chia rẽ vùng miền và mất trật tự xã hội. Bạn có muốn tiếp tục?')) {
+    // Lấy danh sách ID các bình luận hiển thị trên trang hiện tại
+    const ids = Array.from(document.querySelectorAll('tr[id^="comment-row-"]'))
+                     .map(tr => tr.id.replace('comment-row-', ''));
+
+    if (ids.length === 0) {
+        alert('Không có bình luận nào trên trang này để quét.');
+        return;
+    }
+
+    if (!confirm('Hệ thống sẽ tự động quét AI các bình luận ở trang này (chưa duyệt hoặc chưa phân tích cảm xúc) để kiểm duyệt và cập nhật thông tin cảm xúc. Bạn có muốn tiếp tục?')) {
         return;
     }
 
@@ -206,6 +262,7 @@ async function runBulkAiCheck() {
 
     const formData = new FormData();
     formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+    ids.forEach(id => formData.append('ids[]', id));
 
     try {
         const res = await fetch('/admin/comments/bulk-ai-check', {
@@ -225,10 +282,37 @@ async function runBulkAiCheck() {
                     if (row && aiCell && statusCell) {
                         let badgeClass = res.is_spam ? 'bg-danger' : 'bg-success';
                         let badgeText = res.is_spam ? '⚠ Vi Phạm' : '✓ Hợp Lệ';
+
+                        let sentimentColors = {
+                            'positive': 'bg-success-subtle text-success border border-success-subtle',
+                            'neutral': 'bg-secondary-subtle text-secondary border border-secondary-subtle',
+                            'negative': 'bg-danger-subtle text-danger border border-danger-subtle'
+                        };
+                        let sentimentLabels = {
+                            'positive': '😊 Tích cực',
+                            'neutral': '😐 Trung lập',
+                            'negative': '😠 Tiêu cực'
+                        };
+                        
+                        let sentimentHtml = '';
+                        if (res.sentiment) {
+                            let sColor = sentimentColors[res.sentiment] || 'bg-secondary';
+                            let sLabel = sentimentLabels[res.sentiment] || res.sentiment;
+                            let sScore = parseFloat(res.sentiment_score).toFixed(1);
+                            sentimentHtml = `
+                                <span class="badge ${sColor}" style="font-size: 0.72rem; padding: 2px 6px; margin-top: 4px;">
+                                    ${sLabel} (${sScore})
+                                </span>
+                            `;
+                        }
+
                         aiCell.innerHTML = `
-                            <span class="badge ${badgeClass} cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" title="${res.reason}">
-                                ${badgeText}
-                            </span>
+                            <div class="d-flex flex-column align-items-center gap-1">
+                                <span class="badge ${badgeClass} cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" title="${res.reason}">
+                                    ${badgeText}
+                                </span>
+                                ${sentimentHtml}
+                            </div>
                         `;
 
                         if (res.is_spam) {

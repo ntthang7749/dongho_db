@@ -319,6 +319,43 @@ class CustomerTest extends TestCase
     }
 
     /**
+     * Test checkout and place order with QR payment
+     */
+    public function test_checkout_and_place_order_qr(): void
+    {
+        // Add item to session cart
+        session(['cart' => [
+            $this->product->id => [
+                'product_id' => $this->product->id,
+                'name' => $this->product->name,
+                'price' => $this->product->sale_price,
+                'thumbnail' => $this->product->thumbnail,
+                'slug' => $this->product->slug,
+                'quantity' => 1,
+                'stock' => $this->product->stock,
+            ]
+        ]]);
+
+        // Place QR order
+        $responsePlace = $this->actingAs($this->customer)->post('/dat-hang/dat', [
+            'receiver_name' => 'Nguyen Van A',
+            'receiver_phone' => '0987654321',
+            'receiver_address' => '123 Test Street, HCM',
+            'payment_method' => 'qr',
+        ]);
+
+        $order = Order::where('user_id', $this->customer->id)->where('payment_method', 'qr')->first();
+        $this->assertNotNull($order);
+
+        $responsePlace->assertRedirect(route('orders.qr', $order->order_code));
+        $this->assertDatabaseHas('orders', [
+            'user_id' => $this->customer->id,
+            'payment_method' => 'qr',
+            'total' => 1200000,
+        ]);
+    }
+
+    /**
      * Test wishlist toggle and view
      */
     public function test_wishlist_functionality(): void

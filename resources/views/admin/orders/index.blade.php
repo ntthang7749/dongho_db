@@ -63,21 +63,21 @@ $statusLabels = ['pending'=>'Chờ XN','confirmed'=>'Đã XN','shipping'=>'Đang
                     </td>
                     <td class="text-danger fw-bold">{{ number_format($order->total) }}đ</td>
                     <td>
-                        {{-- Trong cột "Thanh toán", thêm badge QR --}}
                         @if($order->payment_method === 'qr')
-                        <span class="badge bg-primary">
-                            <i class="bi bi-qr-code me-1"></i>QR
-                            @if($order->payment_status !== 'paid')
-                                — <span class="text-warning">Chờ xác nhận</span>
-                            @else
-                                — Đã TT
-                            @endif
-                        </span>
+                            <span class="badge bg-primary">
+                                <i class="bi bi-qr-code me-1"></i>QR
+                            </span>
+                        @elseif($order->payment_method === 'vnpay')
+                            <span class="badge bg-info text-dark">
+                                VNPay
+                            </span>
+                        @else
+                            <span class="badge bg-secondary">
+                                COD
+                            </span>
                         @endif
-                        
                         <span class="badge {{ $order->payment_status === 'paid' ? 'bg-success' : 'bg-warning text-dark' }}">
-                            {{ $order->payment_method === 'cod' ? 'COD' : 'VNPay' }}
-                            — {{ $order->payment_status === 'paid' ? 'Đã TT' : 'Chưa TT' }}
+                            {{ $order->payment_status === 'paid' ? 'Đã TT' : 'Chưa TT' }}
                         </span>
                     </td>
                     <td>

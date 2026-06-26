@@ -331,20 +331,26 @@ $payMethod = match($order->payment_method) {
         <a href="{{ route('orders.invoice', $order->order_code) }}" target="_blank" class="btn btn-success d-inline-flex align-items-center gap-2 fw-semibold px-4 py-2.5 rounded-3 shadow-sm border-0">
             <i class="bi bi-file-earmark-pdf"></i> Tải Hóa Đơn PDF
         </a>
-        @if($order->status === 'pending' && $order->payment_status === 'pending' && $order->payment_method === 'vnpay')
-        <form method="POST" action="{{ route('orders.repay', $order->order_code) }}" class="d-inline">
-            @csrf
-            <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold px-4 py-2.5 rounded-3 shadow-sm border-0">
-                <i class="bi bi-credit-card-2-front"></i> Thanh Toán Lại (VNPay)
-            </button>
-        </form>
-        <form method="POST" action="{{ route('orders.change-payment', $order->order_code) }}" class="d-inline"
-              onsubmit="return confirm('Bạn có chắc muốn đổi phương thức thanh toán sang COD?')">
-            @csrf
-            <button type="submit" class="btn btn-warning d-inline-flex align-items-center gap-2 fw-semibold px-4 py-2.5 rounded-3 shadow-sm border-0 text-dark">
-                <i class="bi bi-cash-coin"></i> Đổi Sang COD
-            </button>
-        </form>
+        @if($order->status === 'pending' && $order->payment_status === 'pending' && in_array($order->payment_method, ['vnpay', 'qr']))
+            @if($order->payment_method === 'vnpay')
+            <form method="POST" action="{{ route('orders.repay', $order->order_code) }}" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold px-4 py-2.5 rounded-3 shadow-sm border-0">
+                    <i class="bi bi-credit-card-2-front"></i> Thanh Toán Lại (VNPay)
+                </button>
+            </form>
+            @elseif($order->payment_method === 'qr')
+            <a href="{{ route('orders.qr', $order->order_code) }}" class="btn btn-primary d-inline-flex align-items-center gap-2 fw-semibold px-4 py-2.5 rounded-3 shadow-sm border-0">
+                <i class="bi bi-qr-code-scan"></i> Xem mã QR Thanh Toán
+            </a>
+            @endif
+            <form method="POST" action="{{ route('orders.change-payment', $order->order_code) }}" class="d-inline"
+                  onsubmit="return confirm('Bạn có chắc muốn đổi phương thức thanh toán sang COD?')">
+                @csrf
+                <button type="submit" class="btn btn-warning d-inline-flex align-items-center gap-2 fw-semibold px-4 py-2.5 rounded-3 shadow-sm border-0 text-dark">
+                    <i class="bi bi-cash-coin"></i> Đổi Sang COD
+                </button>
+            </form>
         @endif
         @if(in_array($order->status, ['pending', 'confirmed']))
         <form method="POST" action="{{ route('orders.cancel', $order->id) }}"

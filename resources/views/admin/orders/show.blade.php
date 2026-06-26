@@ -77,7 +77,16 @@ $statusLabels = ['pending'=>'Chờ xác nhận','confirmed'=>'Đã xác nhận',
                 <p class="mb-2"><span class="text-muted">Ngày đặt:</span>
                     {{ $order->created_at->format('d/m/Y H:i') }}</p>
                 <p class="mb-2"><span class="text-muted">Thanh toán:</span>
-                    {{ $order->payment_method === 'cod' ? 'COD' : 'VNPay' }}</p>
+                    @if($order->payment_method === 'cod')
+                        COD
+                    @elseif($order->payment_method === 'vnpay')
+                        VNPay
+                    @elseif($order->payment_method === 'qr')
+                        Chuyển khoản QR
+                    @else
+                        {{ strtoupper($order->payment_method) }}
+                    @endif
+                </p>
                 <p class="mb-3"><span class="text-muted">TT Thanh toán:</span>
                     {{-- Trong card thông tin đơn --}}
                     @if($order->vnpay_transaction_id)

@@ -76,7 +76,7 @@ class OrderController extends Controller
             'receiver_name' => 'required|string|max:100',
             'receiver_phone' => 'required|string|max:20',
             'receiver_address' => 'required|string|max:500',
-            'payment_method' => 'required|in:cod,vnpay',
+            'payment_method' => 'required|in:cod,vnpay,qr',
             'note' => 'nullable|string|max:500',
             'selected_items' => 'nullable|string',
         ]);
@@ -176,6 +176,9 @@ class OrderController extends Controller
                 orderInfo: "Thanh toan don hang {$order->order_code}",
                 ipAddr: $request->ip()
             )),
+
+            // QR Code → redirect sang trang hiển thị mã QR
+            'qr' => redirect()->route('orders.qr', $order->order_code),
 
             // COD → trang thành công
             default => redirect()->route('orders.success', $order->order_code),

@@ -127,6 +127,25 @@
                                 </label>
                             </div>
 
+                            {{-- QR Code --}}
+                            <div class="form-check p-3 border rounded-3 mb-3 cursor-pointer" id="qrBox" style="transition: all 0.2s ease;">
+                                <input class="form-check-input ms-0 me-3" type="radio"
+                                    name="payment_method" id="qr" value="qr"
+                                    {{ old('payment_method') === 'qr' ? 'checked' : '' }}
+                                    onchange="switchPayment('qr')">
+                                <label class="form-check-label w-100 cursor-pointer" for="qr">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <i class="bi bi-qr-code text-primary fs-3"></i>
+                                        <div>
+                                            <strong class="text-dark small">Chuyển khoản Ngân hàng (VietQR)</strong>
+                                            <p class="text-secondary small mb-0" style="font-size: 0.78rem;">
+                                                Quét mã QR để chuyển khoản nhanh 24/7 — Nhận hàng nhanh chóng
+                                            </p>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
                             {{-- VNPAY --}}
                             <div class="form-check p-3 border rounded-3 cursor-pointer" id="vnpayBox" style="transition: all 0.2s ease;">
                                 <input class="form-check-input ms-0 me-3" type="radio"
@@ -221,7 +240,7 @@
 <script>
 function switchPayment(method) {
     // Reset tất cả
-    ['cod','vnpay'].forEach(m => {
+    ['cod','vnpay','qr'].forEach(m => {
         const box = document.getElementById(m + 'Box');
         if (box) {
             box.classList.remove('payment-box-active');
@@ -235,6 +254,7 @@ function switchPayment(method) {
     const boxes = {
         cod:   document.getElementById('codBox'),
         vnpay: document.getElementById('vnpayBox'),
+        qr:    document.getElementById('qrBox'),
     };
     const infos = {
         vnpay: document.getElementById('vnpayInfo'),

@@ -41,7 +41,7 @@ return [
         'public' => [
             'driver' => env('PUBLIC_FILESYSTEM_DRIVER', 'local'),
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'url' => env('PUBLIC_FILESYSTEM_DRIVER', 'local') === 'local' ? rtrim(env('APP_URL', 'http://localhost'), '/').'/storage' : null,
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
@@ -69,7 +69,7 @@ return [
             'cloud'      => env('CLOUDINARY_CLOUD_NAME'),
             'key'        => env('CLOUDINARY_API_KEY', env('CLOUDINARY_KEY')),
             'secret'     => env('CLOUDINARY_API_SECRET', env('CLOUDINARY_SECRET')),
-            'url'        => env('CLOUDINARY_URL'),
+            'url'        => env('CLOUDINARY_URL') ?: null,
             'secure'     => true,
         ],
 

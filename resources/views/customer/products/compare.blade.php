@@ -126,7 +126,7 @@
                                             <i class="bi bi-x-circle-fill"></i>
                                         </span>
                                         <div class="compare-img-wrap mx-auto mb-3 rounded-3 overflow-hidden bg-light">
-                                            <img src="{{ $p->thumbnail ? asset('storage/' . $p->thumbnail) : asset('images/no-image.png') }}" class="w-100 h-100 object-fit-cover" alt="{{ $p->name }}">
+                                            <img src="{{ img_url($p->thumbnail) }}" class="w-100 h-100 object-fit-cover" alt="{{ $p->name }}">
                                         </div>
                                         <a href="{{ route('products.show', $p->slug) }}" class="compare-product-title fw-bold text-dark text-decoration-none d-block small mb-2" title="{{ $p->name }}">
                                             {{ $p->name }}

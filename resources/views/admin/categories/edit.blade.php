@@ -47,7 +47,7 @@
                     <label class="form-label fw-semibold">Hình ảnh</label>
                     @if($category->image)
                         <div class="d-flex align-items-center gap-3 mb-2 p-2 rounded border" style="background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.08) !important;">
-                            <img src="{{ asset('storage/'.$category->image) }}"
+                            <img src="{{ img_url($category->image) }}"
                                  class="rounded animate-hover" style="height:50px; width:50px; object-fit:cover; border: 1px solid rgba(201,168,76,0.2);">
                             <div class="form-check form-switch mb-0">
                                 <input class="form-check-input" type="checkbox" name="delete_image" id="delete_image" value="1">

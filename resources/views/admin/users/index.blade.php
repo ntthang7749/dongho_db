@@ -35,7 +35,7 @@
                     <td>
                         <div class="d-flex align-items-center gap-2">
                             @if($user->avatar)
-                                <img src="{{ str_starts_with($user->avatar,'http') ? $user->avatar : asset('storage/'.$user->avatar) }}"
+                                <img src="{{ str_starts_with($user->avatar,'http') ? $user->avatar : img_url($user->avatar) }}"
                                      width="36" height="36" class="rounded-circle object-fit-cover">
                             @else
                                 <div class="rounded-circle bg-secondary d-flex align-items-center

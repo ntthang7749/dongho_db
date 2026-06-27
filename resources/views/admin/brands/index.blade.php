@@ -15,7 +15,7 @@
     <div class="col-6 col-md-3">
         <div class="card table-card text-center p-3">
             @if($brand->logo)
-                <img src="{{ asset('storage/'.$brand->logo) }}"
+                <img src="{{ img_url($brand->logo) }}"
                      style="height:60px; object-fit:contain;" class="mx-auto mb-2">
             @else
                 <div class="bg-light rounded d-flex align-items-center justify-content-center

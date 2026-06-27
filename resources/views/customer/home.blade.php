@@ -537,7 +537,7 @@
         @forelse($banners as $i => $banner)
             <div class="carousel-item {{ $i === 0 ? 'active' : '' }}">
                 <div class="hero-slide position-relative overflow-hidden">
-                    <img src="{{ asset('storage/' . $banner->image) }}" class="w-100 h-100 object-fit-cover" alt="{{ $banner->title }}"
+                    <img src="{{ img_url($banner->image) }}" class="w-100 h-100 object-fit-cover" alt="{{ $banner->title }}"
                          @if($i > 0) loading="lazy" @endif decoding="async">
                     <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100"></div>
                     <div class="hero-caption position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center px-4 px-md-5">
@@ -645,7 +645,7 @@
                 <a href="{{ route('products.index', ['category' => $cat->slug]) }}" class="category-card d-block text-center p-4 rounded-4 text-decoration-none position-relative">
                     <div class="category-icon-wrap d-flex align-items-center justify-content-center mx-auto mb-3">
                         @if($cat->image)
-                            <img src="{{ asset('storage/' . $cat->image) }}" class="category-img w-100 h-100 object-fit-contain" alt="{{ $cat->name }}"
+                            <img src="{{ img_url($cat->image) }}" class="category-img w-100 h-100 object-fit-contain" alt="{{ $cat->name }}"
                                  loading="lazy" decoding="async">
                         @else
                             <i class="bi bi-watch" style="font-size:2rem; color:var(--gold);"></i>
@@ -1026,7 +1026,7 @@
             @foreach($loopBrands as $brand)
             <a href="{{ route('products.index', ['brand' => $brand->slug]) }}" class="brand-pill d-inline-flex align-items-center gap-2 px-4 py-2.5 rounded-3 text-decoration-none shadow-sm">
                 @if($brand->logo)
-                    <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}"
+                    <img src="{{ img_url($brand->logo) }}" alt="{{ $brand->name }}"
                          loading="lazy" decoding="async">
                 @endif
                 <span class="brand-pill-name">{{ $brand->name }}</span>

@@ -1051,7 +1051,7 @@
             <div id="compare-items" class="d-flex align-items-center gap-2">
                 @foreach($compareProductsData as $p)
                     <div class="compare-item" data-id="{{ $p->id }}">
-                        <img src="{{ $p->thumbnail ? asset('storage/' . $p->thumbnail) : asset('images/no-image.png') }}" alt="{{ $p->name }}" title="{{ $p->name }}">
+                        <img src="{{ img_url($p->thumbnail) }}" alt="{{ $p->name }}" title="{{ $p->name }}">
                         <span class="compare-item-remove" data-id="{{ $p->id }}"><i class="bi bi-x-circle-fill"></i></span>
                     </div>
                 @endforeach

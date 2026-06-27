@@ -30,9 +30,7 @@ $statusLabels = ['pending'=>'Chờ xác nhận','confirmed'=>'Đã xác nhận',
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center gap-3">
-                                    <img src="{{ $item->product_image
-                                        ? asset('storage/'.$item->product_image)
-                                        : asset('images/no-image.png') }}"
+                                    <img src="{{ img_url($item->product_image) }}"
                                          width="50" height="50"
                                          style="object-fit:cover; border-radius:6px;">
                                     <span class="fw-semibold small">{{ $item->product_name }}</span>

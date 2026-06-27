@@ -136,7 +136,7 @@
                     {{-- Image --}}
                     <div class="wish-img-wrap position-relative overflow-hidden" style="background: #faf9f5; height: 210px;">
                         <a href="{{ route('products.show', $product->slug) }}">
-                            <img src="{{ $product->thumbnail ? asset('storage/'.$product->thumbnail) : asset('images/no-image.png') }}"
+                            <img src="{{ img_url($product->thumbnail) }}"
                                  alt="{{ $product->name }}" class="w-100 h-100 object-fit-cover">
                         </a>
 

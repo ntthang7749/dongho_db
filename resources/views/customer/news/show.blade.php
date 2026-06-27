@@ -189,7 +189,7 @@
                     {{-- Main Thumbnail image --}}
                     @if($news->thumbnail)
                     <div class="position-relative overflow-hidden rounded-4 mb-4 shadow-sm ratio ratio-16x9 bg-dark" style="border: 1px solid rgba(201, 168, 76, 0.1);">
-                        <img src="{{ asset('storage/'.$news->thumbnail) }}" alt="{{ $news->title }}" class="w-100 h-100 object-fit-cover">
+                        <img src="{{ img_url($news->thumbnail) }}" alt="{{ $news->title }}" class="w-100 h-100 object-fit-cover">
                     </div>
                     @endif
 
@@ -309,7 +309,7 @@
                     @foreach($recentNews as $item)
                     <a href="{{ route('news.show', $item->slug) }}" class="sidebar-item d-flex gap-3 p-3 border-bottom text-decoration-none">
                         @if($item->thumbnail)
-                            <img src="{{ asset('storage/'.$item->thumbnail) }}"
+                            <img src="{{ img_url($item->thumbnail) }}"
                                  class="rounded-2 flex-shrink-0 object-fit-cover" style="width:64px; height:52px;" alt="{{ $item->title }}">
                         @else
                             <div class="rounded-2 d-flex align-items-center justify-content-center flex-shrink-0 text-white bg-dark fs-5" style="width:64px; height:52px;">📰</div>

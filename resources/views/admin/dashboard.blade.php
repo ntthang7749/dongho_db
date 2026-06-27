@@ -349,7 +349,7 @@
             <div class="list-group list-group-flush">
                 @forelse($lowStockProducts as $p)
                 <div class="list-group-item d-flex align-items-center gap-2 py-2">
-                    <img src="{{ $p->thumbnail ? asset('storage/'.$p->thumbnail) : asset('images/no-image.png') }}"
+                    <img src="{{ img_url($p->thumbnail) }}"
                          width="40" height="40" style="object-fit:cover; border-radius:6px;">
                     <div class="flex-grow-1 overflow-hidden">
                         <p class="mb-0 small fw-semibold text-truncate">{{ $p->name }}</p>

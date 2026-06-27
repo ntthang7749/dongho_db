@@ -254,7 +254,7 @@
                     <div class="cart-thumb-wrap position-relative flex-shrink-0">
                         <a href="{{ route('products.show', $item['slug']) }}">
                             <img class="cart-thumb rounded-3 border object-fit-cover"
-                                 src="{{ $item['thumbnail'] ? asset('storage/'.$item['thumbnail']) : asset('images/no-image.png') }}"
+                                 src="{{ img_url($item['thumbnail']) }}"
                                  alt="{{ $item['name'] }}"
                                  style="width: 80px; height: 80px;">
                         </a>

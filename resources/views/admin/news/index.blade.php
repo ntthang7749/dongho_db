@@ -28,7 +28,7 @@
                     <td>
                         <div class="d-flex align-items-center gap-3">
                             @if($item->thumbnail)
-                                <img src="{{ asset('storage/'.$item->thumbnail) }}"
+                                <img src="{{ img_url($item->thumbnail) }}"
                                      width="70" height="50"
                                      style="object-fit:cover; border-radius:6px;">
                             @endif

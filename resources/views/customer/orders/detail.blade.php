@@ -188,7 +188,7 @@ $payMethod = match($order->payment_method) {
                 <div class="card-body p-4 py-2 bg-white">
                     @foreach($order->items as $item)
                     <div class="d-flex align-items-center gap-3 py-3 border-bottom {{ $loop->last ? 'border-0' : 'border-light' }}">
-                        <img src="{{ $item->product_image ? asset('storage/'.$item->product_image) : asset('images/no-image.png') }}"
+                        <img src="{{ img_url($item->product_image) }}"
                              class="rounded-3 border object-fit-cover flex-shrink-0" style="width:68px; height:68px;" alt="{{ $item->product_name }}">
                         <div class="flex-grow-1 min-w-0">
                             <h6 class="fw-semibold text-dark mb-1 small text-truncate" style="line-height:1.4;">{{ $item->product_name }}</h6>

@@ -154,7 +154,7 @@
                         <div class="position-relative overflow-hidden flex-shrink-0 bg-dark">
                             <div class="ratio ratio-21x9">
                                 @if($item->thumbnail)
-                                    <img src="{{ asset('storage/'.$item->thumbnail) }}" alt="{{ $item->title }}" class="w-100 h-100 object-fit-cover">
+                                    <img src="{{ img_url($item->thumbnail) }}" alt="{{ $item->title }}" class="w-100 h-100 object-fit-cover">
                                 @else
                                     <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-dark text-white fs-1">📰</div>
                                 @endif
@@ -191,7 +191,7 @@
                         <div class="d-flex h-100 gap-0">
                             <div class="flex-shrink-0 overflow-hidden bg-dark" style="width:130px;">
                                 @if($side1->thumbnail)
-                                    <img src="{{ asset('storage/'.$side1->thumbnail) }}" class="w-100 h-100 object-fit-cover">
+                                    <img src="{{ img_url($side1->thumbnail) }}" class="w-100 h-100 object-fit-cover">
                                 @else
                                     <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-dark text-white fs-3">📰</div>
                                 @endif
@@ -217,7 +217,7 @@
                         <div class="d-flex h-100 gap-0">
                             <div class="flex-shrink-0 overflow-hidden bg-dark" style="width:130px;">
                                 @if($side2->thumbnail)
-                                    <img src="{{ asset('storage/'.$side2->thumbnail) }}" class="w-100 h-100 object-fit-cover">
+                                    <img src="{{ img_url($side2->thumbnail) }}" class="w-100 h-100 object-fit-cover">
                                 @else
                                     <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-dark text-white fs-3">📰</div>
                                 @endif
@@ -256,7 +256,7 @@
                         <div class="position-relative overflow-hidden bg-dark">
                             <div class="ratio ratio-16x9">
                                 @if($item->thumbnail)
-                                    <img src="{{ asset('storage/'.$item->thumbnail) }}" alt="{{ $item->title }}" class="w-100 h-100 object-fit-cover">
+                                    <img src="{{ img_url($item->thumbnail) }}" alt="{{ $item->title }}" class="w-100 h-100 object-fit-cover">
                                 @else
                                     <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white fs-2">📰</div>
                                 @endif

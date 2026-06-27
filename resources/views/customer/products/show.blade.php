@@ -380,7 +380,7 @@
                 <div class="gallery-wrap">
                     <div class="gallery-main">
                         <img id="mainImage"
-                             src="{{ $product->thumbnail ? asset('storage/'.$product->thumbnail) : asset('images/no-image.png') }}"
+                             src="{{ img_url($product->thumbnail) }}"
                              alt="{{ $product->name }}"
                              decoding="async">
                     </div>
@@ -388,14 +388,14 @@
                     @if($product->images->count() > 0)
                     <div class="gallery-thumbs d-flex gap-2 flex-wrap">
                         @if($product->thumbnail)
-                        <img src="{{ asset('storage/'.$product->thumbnail) }}"
+                        <img src="{{ img_url($product->thumbnail) }}"
                              class="gallery-thumb active" id="thumb-0"
                              onclick="switchImage(this.src, 'thumb-0')"
                              alt="Main"
                              loading="lazy" decoding="async">
                         @endif
                         @foreach($product->images as $k => $img)
-                        <img src="{{ asset('storage/'.$img->image) }}"
+                        <img src="{{ img_url($img->image) }}"
                              class="gallery-thumb" id="thumb-{{ $k+1 }}"
                              onclick="switchImage(this.src, 'thumb-{{ $k+1 }}')"
                              alt="Gallery {{ $k+1 }}"

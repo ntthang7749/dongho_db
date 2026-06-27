@@ -192,7 +192,7 @@
                             <div class="overflow-y-auto" style="max-height: 280px;">
                                 @foreach($cart as $item)
                                 <div class="d-flex align-items-center gap-3 p-3 border-bottom">
-                                    <img src="{{ $item['thumbnail'] ? asset('storage/'.$item['thumbnail']) : asset('images/no-image.png') }}"
+                                    <img src="{{ img_url($item['thumbnail']) }}"
                                          width="55" height="55" class="rounded-3 border object-fit-cover">
                                     <div class="flex-grow-1 min-w-0">
                                         <p class="mb-0 small fw-semibold text-dark text-truncate">{{ $item['name'] }}</p>

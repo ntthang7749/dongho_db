@@ -73,9 +73,7 @@
                     <td class="text-muted small">{{ $products->firstItem() + $i }}</td>
                     <td>
                         <div class="d-flex align-items-center gap-3">
-                            <img src="{{ $p->thumbnail
-                                ? asset('storage/' . $p->thumbnail)
-                                : asset('images/no-image.png') }}"
+                            <img src="{{ img_url($p->thumbnail) }}"
                                  width="50" height="50"
                                  style="object-fit:cover; border-radius:8px;">
                             <div>

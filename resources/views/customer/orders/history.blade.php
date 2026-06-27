@@ -189,7 +189,7 @@ $statusMap = [
             <div class="order-card-body p-3 p-md-4 bg-white">
                 @foreach($order->items->take(2) as $item)
                 <div class="product-row d-flex align-items-center gap-3 py-3 border-bottom {{ $loop->last && $order->items->count() <= 2 ? 'border-0' : '' }}">
-                    <img src="{{ $item->product_image ? asset('storage/'.$item->product_image) : asset('images/no-image.png') }}"
+                    <img src="{{ img_url($item->product_image) }}"
                          class="rounded-3 flex-shrink-0 border object-fit-cover" style="width: 60px; height: 60px;" alt="{{ $item->product_name }}">
                     <div class="flex-grow-1 min-w-0">
                         <p class="product-name fw-bold small text-dark mb-1 text-truncate">{{ $item->product_name }}</p>

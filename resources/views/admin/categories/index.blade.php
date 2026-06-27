@@ -30,7 +30,7 @@
                     <td>
                         <div class="d-flex align-items-center gap-2">
                             @if($cat->image)
-                                <img src="{{ asset('storage/'.$cat->image) }}"
+                                <img src="{{ img_url($cat->image) }}"
                                      width="36" height="36"
                                      style="object-fit:cover; border-radius:6px;">
                             @else

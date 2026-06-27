@@ -27,7 +27,7 @@
             <div class="mb-3">
                 <label class="form-label fw-semibold">Logo</label>
                 @if($brand->logo)
-                    <img src="{{ asset('storage/'.$brand->logo) }}"
+                    <img src="{{ img_url($brand->logo) }}"
                          class="d-block mb-2 rounded"
                          style="max-height:60px; object-fit:contain;">
                 @endif

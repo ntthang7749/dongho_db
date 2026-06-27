@@ -28,7 +28,7 @@
                 <tr>
                     <td class="text-center fw-bold">{{ $banner->sort_order }}</td>
                     <td>
-                        <img src="{{ asset('storage/'.$banner->image) }}"
+                        <img src="{{ img_url($banner->image) }}"
                              style="height:60px; width:120px; object-fit:cover; border-radius:6px;">
                     </td>
                     <td class="fw-semibold">{{ $banner->title }}</td>

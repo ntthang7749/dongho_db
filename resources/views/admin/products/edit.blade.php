@@ -188,7 +188,7 @@
                 <div class="row g-2">
                     @foreach($product->images as $img)
                     <div class="col-3 position-relative" id="img-{{ $img->id }}">
-                        <img src="{{ asset('storage/' . $img->image) }}"
+                        <img src="{{ img_url($img->image) }}"
                              class="img-fluid rounded" style="height:100px; object-fit:cover;">
                         <button type="button"
                                 class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 p-0"
@@ -217,7 +217,7 @@
                 @if($product->thumbnail)
                 <div class="mb-3">
                     <p class="small text-muted mb-1">Ảnh đại diện hiện tại:</p>
-                    <img src="{{ asset('storage/' . $product->thumbnail) }}"
+                    <img src="{{ img_url($product->thumbnail) }}"
                          class="img-fluid rounded" style="max-height:150px; object-fit:cover;">
                 </div>
                 @endif

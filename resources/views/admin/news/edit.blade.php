@@ -64,7 +64,7 @@
             <div class="card-body">
                 @if($news->thumbnail)
                     <div class="mb-2">
-                        <img src="{{ asset('storage/'.$news->thumbnail) }}"
+                        <img src="{{ img_url($news->thumbnail) }}"
                              class="img-fluid rounded"
                              style="max-height:120px; object-fit:cover;">
                     </div>

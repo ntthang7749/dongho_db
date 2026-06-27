@@ -8,9 +8,7 @@
         {{-- ── IMAGE WRAP ── --}}
         <div class="pcard-img-wrap position-relative overflow-hidden flex-shrink-0 bg-light ratio ratio-1x1">
             <a href="{{ route('products.show', $product->slug) }}" class="d-block w-100 h-100">
-                <img src="{{ $product->thumbnail
-                    ? asset('storage/' . $product->thumbnail)
-                    : asset('images/no-image.png') }}"
+                <img src="{{ img_url($product->thumbnail) }}"
                       class="pcard-img w-100 h-100 object-fit-cover d-block" alt="{{ $product->name }}"
                       loading="lazy" decoding="async">
                 {{-- Hover overlay --}}

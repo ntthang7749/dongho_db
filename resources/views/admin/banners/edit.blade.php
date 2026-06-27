@@ -17,7 +17,7 @@
             </div>
             <div class="mb-3">
                 <label class="form-label fw-semibold">Hình ảnh hiện tại</label>
-                <img src="{{ asset('storage/'.$banner->image) }}"
+                <img src="{{ img_url($banner->image) }}"
                      class="d-block img-fluid rounded mb-2"
                      style="max-height:150px; object-fit:cover;">
                 <label class="form-label fw-semibold">Thay ảnh mới</label>

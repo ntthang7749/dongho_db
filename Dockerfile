@@ -30,7 +30,7 @@ WORKDIR /var/www/html
 COPY . .
 
 # Disable HTTP/2 in composer to fix download issues from GitHub
-RUN composer config --global http2-enable false
+ENV COMPOSER_HTTP_2=0
 
 # Install PHP dependencies (no dev)
 RUN composer install --no-dev --optimize-autoloader

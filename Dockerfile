@@ -29,6 +29,9 @@ WORKDIR /var/www/html
 # Copy project files
 COPY . .
 
+# Disable HTTP/2 in composer to fix download issues from GitHub
+RUN composer config --global http2-enable false
+
 # Install PHP dependencies (no dev)
 RUN composer install --no-dev --optimize-autoloader
 

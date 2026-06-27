@@ -8,6 +8,9 @@ echo "=== Running Laravel startup tasks ==="
 echo "--- Running migrations ---"
 php artisan migrate --force
 
+echo "--- Seeding database (admin account etc.) ---"
+php artisan db:seed --force
+
 echo "--- Caching config/routes/views ---"
 php artisan config:cache
 php artisan route:cache
